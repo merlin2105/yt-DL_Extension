@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ytDownloader QuickLink</title>
+    <!-- Import Google Fonts Outfit and Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-box">
+                <span class="logo-text">yt<span class="logo-highlight">Downloader</span></span>
+                <span class="logo-badge">QuickLink</span>
+            </div>
+            <div class="status-indicator-box" id="statusBox" title="Hintergrund-Helper Status">
+                <span class="status-dot pulsing" id="statusDot"></span>
+                <span class="status-text" id="statusText">Verbinde...</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- URL Input / Detection Section -->
+            <section class="section card url-section">
+                <label for="urlInput" class="field-label">Video URL</label>
+                <div class="input-row">
+                    <div class="input-wrapper">
+                        <input type="text" id="urlInput" placeholder="URL hier einfügen...">
+                        <span class="glow-border"></span>
+                    </div>
+                    <button type="button" class="btn-action-small" id="pasteUrlBtn" title="Aus Zwischenablage einfügen">
+                        <svg class="btn-action-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="btn-action-small" id="checkUrlBtn" title="URL prüfen">
+                        <svg class="btn-action-svg" id="checkUrlIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Video Info Preview Card (Hidden by default, shown when URL is parsed) -->
+            <section class="section card preview-card hidden" id="previewCard">
+                <div class="video-thumbnail-wrapper">
+                    <img src="" alt="Thumbnail" id="videoThumbnail" crossorigin="anonymous">
+                    <span class="video-duration" id="videoDuration">0:00</span>
+                </div>
+                <div class="video-details">
+                    <h3 class="video-title" id="videoTitle">Lade Video Details...</h3>
+                    <span class="video-source" id="videoSource">YouTube</span>
+                </div>
+            </section>
+
+            <!-- Settings & Configuration -->
+            <section class="section card settings-section">
+                <div class="settings-grid">
+                    <div class="select-wrapper">
+                        <label for="formatSelect" class="field-label">Typ</label>
+                        <select id="formatSelect">
+                            <option value="video">🎥 Video (MP4)</option>
+                            <option value="audio">🎵 Audio (MP3)</option>
+                        </select>
+                        <span class="select-glow"></span>
+                    </div>
+
+                    <div class="select-wrapper" id="qualityWrapper">
+                        <label for="qualitySelect" class="field-label">Qualität</label>
+                        <select id="qualitySelect">
+                            <option value="best">🌟 Beste Qualität</option>
+                            <option value="1080p">💎 Full HD (1080p)</option>
+                            <option value="720p">📺 HD (720p)</option>
+                            <option value="480p">📼 Standard (480p)</option>
+                        </select>
+                        <span class="select-glow"></span>
+                    </div>
+                </div>
+            </section>
+
+
+
+            <!-- Download Progress Tracker (Hidden by default, shown during download) -->
+            <section class="section card progress-card hidden" id="progressCard">
+                <div class="progress-info-row">
+                    <span class="progress-status" id="progressStatus">Lade herunter...</span>
+                    <span class="progress-percent" id="progressPercent">0%</span>
+                </div>
+                
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                
+                <div class="progress-stats-row">
+                    <div class="stat-badge">
+                        <span class="stat-icon">⚡</span>
+                        <span class="stat-val" id="progressSpeed">0 B/s</span>
+                    </div>
+                    <div class="stat-badge">
+                        <span class="stat-icon">⏳</span>
+                        <span class="stat-val" id="progressEta">00:00</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <section class="action-section">
+                <button type="button" class="btn btn-primary" id="downloadBtn" disabled>
+                    <span class="btn-text">Download starten</span>
+                    <span class="btn-glow"></span>
+                </button>
+            </section>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <span class="footer-note">Speichert direkt in deinen Downloads-Ordner</span>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

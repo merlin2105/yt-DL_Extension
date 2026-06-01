@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "ytDownloader QuickLink",
+  "description": "Lade Videos und Audios mit einem Klick von beliebigen Webseiten (YouTube, Facebook, X, etc.) direkt auf deinen PC.",
+  "version": "1.0.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiphfoqN9G9183Ef/GEuRwU0Oy01OETbcISeaP8HD+1Enl+X9fZ7EysTBGFUF1iBuNFOZPostXyH+YfXXeFMZqrj0A36K0CwLDLuUFqOnp1HJ98nxZqQi1mhlxSz/VlKYw7zgisFh6emou82CzGh/M9+nu/DsQmgWzWBNvgjvYyFpslXX81ITGVNGkpLdrPZ8WJTVY3KSavlpooQYtJuziAs41+3BMvw3OASzpG9O42Jb3/MxjGI4g5XVxlEhEhOMWfAqzmNpH6jPELDT/oK2dYBkE7BmMcfX3u1oMHjP70Ao0DD3vnWN0UZVH/hMv56HpOU04/1EFAvWeQizeC7IowIDAQAB",
+  "permissions": [
+    "activeTab",
+    "nativeMessaging",
+    "storage",
+    "clipboardRead"
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  }
+}
