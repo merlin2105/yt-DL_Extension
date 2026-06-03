@@ -222,7 +222,7 @@ async function handleMessage(msg) {
             const downloadsFolder = path.join(homedir(), 'Downloads');
             
             // Format parameters
-            let formatString = 'bestvideo+bestaudio/best';
+            let formatString = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best';
             let ext = 'mp4';
             let postProcessArgs = [];
 
@@ -231,11 +231,11 @@ async function handleMessage(msg) {
                 ext = 'mp3';
                 postProcessArgs = ['-x', '--audio-format', 'mp3', '--audio-quality', '0'];
             } else if (quality === '1080p') {
-                formatString = 'bestvideo[height<=1080]+bestaudio/best';
+                formatString = 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best';
             } else if (quality === '720p') {
-                formatString = 'bestvideo[height<=720]+bestaudio/best';
+                formatString = 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best';
             } else if (quality === '480p') {
-                formatString = 'bestvideo[height<=480]+bestaudio/best';
+                formatString = 'bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[height<=480][ext=mp4]/best';
             }
 
             const outputTemplate = path.join(downloadsFolder, '%(title)s.%(ext)s');
