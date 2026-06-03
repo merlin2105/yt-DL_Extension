@@ -18,10 +18,41 @@ function log(msg) {
     fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${msg}\n`);
 }
 
+// Linux library path configuration for bundled ffmpeg
+if (process.platform === 'linux') {
+    delete process.env.LD_PRELOAD;
+    delete process.env.VIVALDI_PRELOADS;
+    const ffmpegLibPath = path.join(__dirname, '..', '..', 'ffmpeg', 'lib');
+    if (fs.existsSync(ffmpegLibPath)) {
+        if (process.env.LD_LIBRARY_PATH) {
+            process.env.LD_LIBRARY_PATH = `${ffmpegLibPath}:${process.env.LD_LIBRARY_PATH}`;
+        } else {
+            process.env.LD_LIBRARY_PATH = ffmpegLibPath;
+        }
+        log(`Set LD_LIBRARY_PATH for helper: ${process.env.LD_LIBRARY_PATH}`);
+    }
+    process.env.GLIBC_TUNABLES = "glibc.cpu.hwcaps=-AVX2_Usable,-AVX_Usable,-AVX_Fast_Unaligned_Load,-SSE4_2_Usable";
+    log(`Set GLIBC_TUNABLES for helper: ${process.env.GLIBC_TUNABLES}`);
+}
+
 log('Helper started successfully');
 
 // Standard Native Messaging communication functions
 let inputBuffer = Buffer.alloc(0);
+let activeDownloads = 0;
+let stdinEnded = false;
+
+function checkExit() {
+    if (stdinEnded && activeDownloads === 0) {
+        log('Exiting helper since stdin closed and no active downloads.');
+        process.exit(0);
+    }
+}
+
+// Handle stdout errors (e.g. EPIPE when extension popup closes)
+process.stdout.on('error', (err) => {
+    log(`process.stdout error: ${err.message}`);
+});
 
 process.stdin.on('data', (chunk) => {
     inputBuffer = Buffer.concat([inputBuffer, chunk]);
@@ -29,8 +60,13 @@ process.stdin.on('data', (chunk) => {
 });
 
 process.stdin.on('end', () => {
-    log('process.stdin closed, exiting...');
-    process.exit(0);
+    log('process.stdin closed');
+    stdinEnded = true;
+    checkExit();
+});
+
+process.stdin.on('error', (err) => {
+    log(`process.stdin error: ${err.message}`);
 });
 
 function processBuffer() {
@@ -136,7 +172,16 @@ function downloadFile(url, destPath) {
 // Find ffmpeg path
 function getFfmpegPath() {
     const isWin = process.platform === 'win32';
-    // Check system PATH
+
+    // 1. Check if we have a bundled ffmpeg in the parent app folder
+    const exeName = isWin ? 'ffmpeg.exe' : 'ffmpeg';
+    const bundledFfmpegPath = path.join(__dirname, '..', '..', 'ffmpeg', 'bin', exeName);
+    if (fs.existsSync(bundledFfmpegPath)) {
+        log(`Using bundled ffmpeg from parent app: ${bundledFfmpegPath}`);
+        return bundledFfmpegPath;
+    }
+
+    // 2. Check system PATH
     try {
         const checkCmd = isWin ? 'where ffmpeg' : 'which ffmpeg';
         const pathResult = execSync(checkCmd).toString().trim().split('\n')[0];
@@ -167,10 +212,15 @@ async function handleMessage(msg) {
 
         try {
             const ytDlpPath = await getExecutablePath();
-            log(`Running getInfo for ${url} using ${ytDlpPath}`);
+            const ffmpegPath = getFfmpegPath();
+            const ffmpegLocationArgs = [];
+            if (path.isAbsolute(ffmpegPath)) {
+                ffmpegLocationArgs.push('--ffmpeg-location', path.dirname(ffmpegPath));
+            }
+            log(`Running getInfo for ${url} using ${ytDlpPath} and ffmpeg: ${ffmpegPath}`);
 
             // Spawn yt-dlp to get info JSON
-            const args = ['-j', '--no-playlist', '--no-warnings', url];
+            const args = ['-j', '--no-playlist', '--no-warnings', ...ffmpegLocationArgs, url];
             const child = spawn(ytDlpPath, args);
 
             let stdout = '';
@@ -250,10 +300,10 @@ async function handleMessage(msg) {
             ];
 
             log(`Spawning yt-dlp download with args: ${args.join(' ')}`);
+            activeDownloads++;
             const child = spawn(ytDlpPath, args);
 
             let leftover = '';
-            // Match progress e.g. [download]  12.3% of 45.67MiB at  4.56MiB/s ETA 00:10
             const progressRegex = /\[download\]\s+([\d.]+)\%\s+of\s+~?([\d.]+\w+)\s+at\s+([\d.]+\w+\/s)\s+ETA\s+([\d:]+)/;
 
             child.stdout.on('data', (data) => {
@@ -284,7 +334,10 @@ async function handleMessage(msg) {
             });
 
             child.on('close', (code) => {
+                activeDownloads--;
+                log(`[yt-dlp close] Process exited with code ${code}`);
                 if (code === 0) {
+                    log(`Download process finished successfully for: ${url}`);
                     sendMessage({
                         type: 'complete',
                         message: 'Download complete!',
@@ -295,6 +348,11 @@ async function handleMessage(msg) {
                     log(`Download process failed with code ${code}. Stderr: ${stderr}`);
                     sendError(`Download failed: ${stderr.trim() || 'Internal Error'}`, url);
                 }
+                checkExit();
+            });
+
+            child.on('error', (err) => {
+                log(`Child process spawn/runtime error: ${err.message}`);
             });
 
         } catch (err) {

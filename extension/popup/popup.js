@@ -32,6 +32,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isHelperConnected = false;
     let nativePort = null;
 
+    // Load and restore saved settings from chrome.storage.local
+    chrome.storage.local.get(['defaultType', 'defaultQuality'], (items) => {
+        if (items.defaultType) {
+            formatSelect.value = items.defaultType;
+            if (items.defaultType === 'audio') {
+                qualityWrapper.classList.add('hidden');
+            } else {
+                qualityWrapper.classList.remove('hidden');
+            }
+        }
+        if (items.defaultQuality) {
+            qualitySelect.value = items.defaultQuality;
+        }
+    });
+
     // Helper to format duration seconds to MM:SS or HH:MM:SS
     function formatTime(secs) {
         if (!secs || isNaN(secs)) return '00:00';
@@ -115,6 +130,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             qualityWrapper.classList.remove('hidden');
         }
+        chrome.storage.local.set({ defaultType: formatSelect.value });
+    });
+
+    qualitySelect.addEventListener('change', () => {
+        chrome.storage.local.set({ defaultQuality: qualitySelect.value });
     });
 
     // Establish Native Messaging connection
