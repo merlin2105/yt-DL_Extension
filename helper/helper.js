@@ -214,6 +214,10 @@ async function handleMessage(msg) {
         try {
             const ytDlpPath = await getExecutablePath();
             const ffmpegPath = getFfmpegPath();
+            const ffmpegLocationArgs = [];
+            if (path.isAbsolute(ffmpegPath)) {
+                ffmpegLocationArgs.push('--ffmpeg-location', path.dirname(ffmpegPath));
+            }
             
             const downloadsFolder = path.join(homedir(), 'Downloads');
             
@@ -240,7 +244,7 @@ async function handleMessage(msg) {
                 '-f', formatString,
                 '-o', outputTemplate,
                 '--no-playlist',
-                '--ffmpeg-location', ffmpegPath,
+                ...ffmpegLocationArgs,
                 ...postProcessArgs,
                 url
             ];
