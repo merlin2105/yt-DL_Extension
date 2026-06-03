@@ -55,8 +55,8 @@ for i in "${!PATHS[@]}"; do
     # Check if the browser's config directory exists
     if [ -d "$parent_dir" ]; then
         mkdir -p "$target_path"
-        # Directly copy the template file to avoid bash expansion corruption!
-        cp "$TEMPLATE_PATH" "$target_path/com.ytdownloader.helper.json"
+        # Replace HOST_PATH placeholder with the absolute script location dynamically
+        sed "s|HOST_PATH|$DIR/helper.sh|g" "$TEMPLATE_PATH" > "$target_path/com.ytdownloader.helper.json"
         echo "✅ Erfolgreich registriert für: $browser_name"
         installed_any=true
     fi

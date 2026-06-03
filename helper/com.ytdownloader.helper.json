@@ -1,7 +1,7 @@
 {
   "name": "com.ytdownloader.helper",
   "description": "ytDownloader background helper for video and audio downloads",
-  "path": "/home/merlin/CascadeProjects/ytDownloader/Extension/helper/helper.sh",
+  "path": "HOST_PATH",
   "type": "stdio",
   "allowed_origins": [
     "chrome-extension://gibiaahjfmmffegkhbhhgbkcddaelejk/"
