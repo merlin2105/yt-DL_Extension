@@ -67,6 +67,9 @@ if ! command -v node >/dev/null 2>&1 && [ ! -f "$NODE_BIN" ]; then
     fi
 else
     echo "✅ Node.js ist verfügbar."
+    if [ -f "$NODE_BIN" ]; then
+        chmod +x "$NODE_BIN" 2>/dev/null
+    fi
 fi
 
 # 2. Check/Setup FFmpeg
