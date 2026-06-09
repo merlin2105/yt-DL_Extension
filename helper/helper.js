@@ -194,8 +194,41 @@ function getFfmpegPath() {
                         log(`Made bundled ffprobe executable: ${bundledFfprobePath}`);
                     }
                 }
+
+                // Create missing symlinks in ffmpeg/lib
+                const libDir = path.join(__dirname, '..', '..', 'ffmpeg', 'lib');
+                if (fs.existsSync(libDir)) {
+                    const files = fs.readdirSync(libDir);
+                    for (const file of files) {
+                        // Match files like libavcodec.so.60.31.102
+                        if (file.endsWith('.so') || file.includes('.so.')) {
+                            const parts = file.split('.');
+                            // Must have at least 5 parts: [libavcodec, so, 60, 31, 102]
+                            if (parts.length >= 5 && parts[parts.length - 4] === 'so') {
+                                const symlinkName = parts.slice(0, parts.length - 2).join('.');
+                                const symlinkPath = path.join(libDir, symlinkName);
+                                try {
+                                    if (fs.existsSync(symlinkPath) || fs.lstatSync(symlinkPath).isSymbolicLink()) {
+                                        continue;
+                                    }
+                                } catch (e) {
+                                    // lstat fails if it doesn't exist
+                                }
+                                try {
+                                    fs.unlinkSync(symlinkPath);
+                                } catch (e) {}
+                                try {
+                                    fs.symlinkSync(file, symlinkPath);
+                                    log(`Created library symlink: ${symlinkName} -> ${file}`);
+                                } catch (err) {
+                                    log(`Failed to create library symlink ${symlinkName}: ${err.message}`);
+                                }
+                            }
+                        }
+                    }
+                }
             } catch (e) {
-                log(`Failed to chmod bundled ffmpeg/ffprobe: ${e.message}`);
+                log(`Failed to chmod bundled ffmpeg/ffprobe or create symlinks: ${e.message}`);
             }
         }
         log(`Using bundled ffmpeg from parent app: ${bundledFfmpegPath}`);

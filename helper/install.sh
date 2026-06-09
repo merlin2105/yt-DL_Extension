@@ -103,6 +103,23 @@ if [ -d "$FFMPEG_DIR" ]; then
     chmod +x "$FFMPEG_DIR"/bin/ffmpeg 2>/dev/null
     chmod +x "$FFMPEG_DIR"/bin/ffprobe 2>/dev/null
     chmod +x "$FFMPEG_DIR"/bin/ffplay 2>/dev/null
+    
+    # Create missing shared library symlinks
+    if [ -d "$FFMPEG_DIR/lib" ]; then
+        echo "Erstelle fehlende Symlinks für FFmpeg-Bibliotheken..."
+        (
+            cd "$FFMPEG_DIR/lib"
+            for lib in *.so.*.*.*; do
+                if [ -f "$lib" ]; then
+                    # e.g., libavcodec.so.60.31.102 -> libavcodec.so.60
+                    major_ver=$(echo "$lib" | cut -d. -f1-3)
+                    if [ ! -L "$major_ver" ] && [ ! -f "$major_ver" ]; then
+                        ln -sf "$lib" "$major_ver"
+                    fi
+                fi
+            done
+        )
+    fi
     echo "✅ FFmpeg ist eingerichtet und ausführbar."
 else
     echo "⚠️  Warnung: FFmpeg konnte nicht eingerichtet werden. Das Zusammenfügen von Video und Audio könnte fehlschlagen."
