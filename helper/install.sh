@@ -44,6 +44,69 @@ echo ""
 
 installed_any=false
 
+# Verify Node.js and FFmpeg dependencies
+PARENT_DIR="$DIR/../.."
+FFMPEG_DIR="$PARENT_DIR/ffmpeg"
+NODE_BIN="$PARENT_DIR/node"
+
+echo "Überprüfe Abhängigkeiten..."
+
+# 1. Check/Setup Node.js
+if ! command -v node >/dev/null 2>&1 && [ ! -f "$NODE_BIN" ]; then
+    echo "-> Node.js nicht auf dem System gefunden. Lade Node.js herunter..."
+    if command -v wget >/dev/null 2>&1; then
+        wget "https://github.com/aandrew-me/ffmpeg-builds/releases/download/v8/node_linux_amd64" -O "$NODE_BIN"
+    elif command -v curl >/dev/null 2>&1; then
+        curl -L "https://github.com/aandrew-me/ffmpeg-builds/releases/download/v8/node_linux_amd64" -o "$NODE_BIN"
+    else
+        echo "❌ Fehler: Weder wget noch curl ist installiert. Node.js kann nicht automatisch geladen werden."
+    fi
+    if [ -f "$NODE_BIN" ]; then
+        chmod +x "$NODE_BIN"
+        echo "✅ Node.js erfolgreich heruntergeladen und eingerichtet."
+    fi
+else
+    echo "✅ Node.js ist verfügbar."
+fi
+
+# 2. Check/Setup FFmpeg
+if [ ! -d "$FFMPEG_DIR" ]; then
+    echo "-> FFmpeg Ordner nicht gefunden. Suche nach Archiv oder lade herunter..."
+    if [ -f "$PARENT_DIR/ffmpeg_linux_amd64.tar.xz" ]; then
+        echo "Extrahiere vorhandenes ffmpeg_linux_amd64.tar.xz..."
+        tar -xf "$PARENT_DIR/ffmpeg_linux_amd64.tar.xz" -C "$PARENT_DIR"
+        mv "$PARENT_DIR/ffmpeg_linux_amd64" "$FFMPEG_DIR"
+    else
+        echo "Lade FFmpeg herunter..."
+        if command -v wget >/dev/null 2>&1; then
+            wget "https://github.com/aandrew-me/ffmpeg-builds/releases/download/v8/ffmpeg_linux_amd64.tar.xz" -O "$PARENT_DIR/ffmpeg_linux_amd64.tar.xz"
+        elif command -v curl >/dev/null 2>&1; then
+            curl -L "https://github.com/aandrew-me/ffmpeg-builds/releases/download/v8/ffmpeg_linux_amd64.tar.xz" -o "$PARENT_DIR/ffmpeg_linux_amd64.tar.xz"
+        else
+            echo "❌ Fehler: Weder wget noch curl ist installiert. FFmpeg kann nicht automatisch geladen werden."
+        fi
+        
+        if [ -f "$PARENT_DIR/ffmpeg_linux_amd64.tar.xz" ]; then
+            echo "Extrahiere FFmpeg..."
+            tar -xf "$PARENT_DIR/ffmpeg_linux_amd64.tar.xz" -C "$PARENT_DIR"
+            mv "$PARENT_DIR/ffmpeg_linux_amd64" "$FFMPEG_DIR"
+        fi
+    fi
+fi
+
+# Ensure FFmpeg binaries are executable
+if [ -d "$FFMPEG_DIR" ]; then
+    echo "Stelle sicher, dass die FFmpeg-Dateien ausführbar sind..."
+    chmod +x "$FFMPEG_DIR"/bin/ffmpeg 2>/dev/null
+    chmod +x "$FFMPEG_DIR"/bin/ffprobe 2>/dev/null
+    chmod +x "$FFMPEG_DIR"/bin/ffplay 2>/dev/null
+    echo "✅ FFmpeg ist eingerichtet und ausführbar."
+else
+    echo "⚠️  Warnung: FFmpeg konnte nicht eingerichtet werden. Das Zusammenfügen von Video und Audio könnte fehlschlagen."
+fi
+
+echo ""
+
 # Make sure helper.sh is executable
 chmod +x "$DIR/helper.sh" 2>/dev/null
 

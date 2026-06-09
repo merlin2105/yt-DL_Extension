@@ -176,7 +176,28 @@ function getFfmpegPath() {
     // 1. Check if we have a bundled ffmpeg in the parent app folder
     const exeName = isWin ? 'ffmpeg.exe' : 'ffmpeg';
     const bundledFfmpegPath = path.join(__dirname, '..', '..', 'ffmpeg', 'bin', exeName);
+    const bundledFfprobePath = path.join(__dirname, '..', '..', 'ffmpeg', 'bin', isWin ? 'ffprobe.exe' : 'ffprobe');
+    
     if (fs.existsSync(bundledFfmpegPath)) {
+        if (!isWin) {
+            try {
+                // Ensure executable permissions
+                const stats = fs.statSync(bundledFfmpegPath);
+                if ((stats.mode & 0o111) === 0) {
+                    fs.chmodSync(bundledFfmpegPath, 0o755);
+                    log(`Made bundled ffmpeg executable: ${bundledFfmpegPath}`);
+                }
+                if (fs.existsSync(bundledFfprobePath)) {
+                    const probeStats = fs.statSync(bundledFfprobePath);
+                    if ((probeStats.mode & 0o111) === 0) {
+                        fs.chmodSync(bundledFfprobePath, 0o755);
+                        log(`Made bundled ffprobe executable: ${bundledFfprobePath}`);
+                    }
+                }
+            } catch (e) {
+                log(`Failed to chmod bundled ffmpeg/ffprobe: ${e.message}`);
+            }
+        }
         log(`Using bundled ffmpeg from parent app: ${bundledFfmpegPath}`);
         return bundledFfmpegPath;
     }
