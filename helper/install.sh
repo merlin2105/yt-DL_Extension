@@ -44,6 +44,9 @@ echo ""
 
 installed_any=false
 
+# Make sure helper.sh is executable
+chmod +x "$DIR/helper.sh" 2>/dev/null
+
 echo "Durchsuche Browser-Verzeichnisse und installiere Manifest..."
 echo "---------------------------------------------"
 
