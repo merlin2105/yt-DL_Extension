@@ -27,13 +27,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const downloadBtn = document.getElementById('downloadBtn');
     const checkUrlBtn = document.getElementById('checkUrlBtn');
     const pasteUrlBtn = document.getElementById('pasteUrlBtn');
+    const sponsorBlockChecked = document.getElementById('sponsorBlockChecked');
 
     let currentUrl = '';
     let isHelperConnected = false;
     let nativePort = null;
 
     // Load and restore saved settings from chrome.storage.local
-    chrome.storage.local.get(['defaultType', 'defaultQuality'], (items) => {
+    chrome.storage.local.get(['defaultType', 'defaultQuality', 'sponsorBlock'], (items) => {
         if (items.defaultType) {
             formatSelect.value = items.defaultType;
             if (items.defaultType === 'audio') {
@@ -44,6 +45,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (items.defaultQuality) {
             qualitySelect.value = items.defaultQuality;
+        }
+        if (items.sponsorBlock !== undefined) {
+            sponsorBlockChecked.checked = items.sponsorBlock;
         }
     });
 
@@ -135,6 +139,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     qualitySelect.addEventListener('change', () => {
         chrome.storage.local.set({ defaultQuality: qualitySelect.value });
+    });
+
+    sponsorBlockChecked.addEventListener('change', () => {
+        chrome.storage.local.set({ sponsorBlock: sponsorBlockChecked.checked });
     });
 
     // Establish Native Messaging connection
@@ -327,7 +335,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             action: 'download',
             url: currentUrl,
             type: formatSelect.value,
-            quality: qualitySelect.value
+            quality: qualitySelect.value,
+            sponsorBlock: sponsorBlockChecked.checked
         });
     });
 

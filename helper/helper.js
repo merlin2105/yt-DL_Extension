@@ -309,7 +309,7 @@ async function handleMessage(msg) {
     }
 
     if (msg.action === 'download') {
-        const { url, type, quality } = msg;
+        const { url, type, quality, sponsorBlock } = msg;
         if (!url) {
             sendError('No URL provided');
             return;
@@ -349,9 +349,14 @@ async function handleMessage(msg) {
                 '-o', outputTemplate,
                 '--no-playlist',
                 ...ffmpegLocationArgs,
-                ...postProcessArgs,
-                url
+                ...postProcessArgs
             ];
+
+            if (sponsorBlock) {
+                args.push('--sponsorblock-remove', 'all');
+            }
+
+            args.push(url);
 
             log(`Spawning yt-dlp download with args: ${args.join(' ')}`);
             activeDownloads++;
