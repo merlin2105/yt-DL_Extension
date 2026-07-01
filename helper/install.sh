@@ -147,6 +147,16 @@ for i in "${!PATHS[@]}"; do
         sed "s|HOST_PATH|$DIR/helper.sh|g" "$TEMPLATE_PATH" > "$target_path/com.ytdownloader.helper.json"
         echo "✅ Erfolgreich registriert für: $browser_name"
         installed_any=true
+
+        # If it's a Flatpak browser, grant read-only filesystem access to the parent folder
+        if [[ "$target_path" == "$HOME/.var/app/"* ]]; then
+            # Extract Flatpak App ID (the directory name after ~/.var/app/)
+            appid=$(echo "$target_path" | cut -d'/' -f6)
+            if command -v flatpak >/dev/null 2>&1; then
+                echo "   -> Erteile Flatpak-Berechtigung (Filesystem) für $appid..."
+                flatpak override --user "$appid" --filesystem="$PARENT_DIR:ro" >/dev/null 2>&1
+            fi
+        fi
     fi
 done
 
